@@ -5,30 +5,35 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { data, error } = await supabase
       .from('products')
       .select('*')
       .eq('id', params.id)
       .single()
 
-    if (error) throw error
+    if (error) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      )
+    }
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Fetch product error:', error)
+    console.error('[v0] Fetch product error:', error)
     return NextResponse.json(
-      { error: 'Product not found' },
+      { error: error instanceof Error ? error.message : 'Product not found' },
       { status: 404 }
     )
   }
@@ -38,18 +43,25 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
-    const body = await request.json()
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    let body
+    try {
+      body = await request.json()
+    } catch (e) {
+      console.error('[v0] Failed to parse request body:', e)
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
+
     const { name, supplier, quantity_in_stock, cost_price, selling_price } = body
 
     const { data, error } = await supabase
@@ -66,13 +78,18 @@ export async function PUT(
       .eq('created_by', user.id)
       .select()
 
-    if (error) throw error
+    if (error) {
+      return NextResponse.json(
+        { error: error.message || 'Failed to update product' },
+        { status: 500 }
+      )
+    }
 
-    return NextResponse.json(data[0])
+    return NextResponse.json(data?.[0] || {})
   } catch (error) {
-    console.error('Update product error:', error)
+    console.error('[v0] Update product error:', error)
     return NextResponse.json(
-      { error: 'Failed to update product' },
+      { error: error instanceof Error ? error.message : 'Failed to update product' },
       { status: 500 }
     )
   }
@@ -82,17 +99,17 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     console.log('[v0] Deleting product:', params.id, 'by user:', user.id)
     
     const { error, data } = await supabase
@@ -104,7 +121,10 @@ export async function DELETE(
 
     if (error) {
       console.log('[v0] Delete error from Supabase:', error)
-      throw error
+      return NextResponse.json(
+        { error: error.message || 'Failed to delete product' },
+        { status: 500 }
+      )
     }
 
     console.log('[v0] Product deleted successfully, affected rows:', data)
