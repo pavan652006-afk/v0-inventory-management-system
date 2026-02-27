@@ -54,10 +54,17 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       const response = await fetch('/api/products')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
-      setProducts(data)
+      setProducts(Array.isArray(data) ? data : [])
+      setError(null)
     } catch (error) {
-      console.error('Failed to fetch products:', error)
+      console.error('[v0] Failed to fetch products:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch products')
+      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -66,6 +73,7 @@ export default function ProductsPage() {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsAddingProduct(true)
+    setError(null)
 
     try {
       const response = await fetch('/api/products', {
@@ -79,7 +87,10 @@ export default function ProductsPage() {
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to add product')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to add product')
+      }
 
       await fetchProducts()
       setFormData({
@@ -90,7 +101,8 @@ export default function ProductsPage() {
         selling_price: '',
       })
     } catch (error) {
-      console.error('Failed to add product:', error)
+      console.error('[v0] Failed to add product:', error)
+      setError(error instanceof Error ? error.message : 'Failed to add product')
     } finally {
       setIsAddingProduct(false)
     }
