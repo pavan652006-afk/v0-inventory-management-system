@@ -18,6 +18,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      .eq('created_by', user.id)
       .order('created_at', { ascending: false })
 
     if (error) {

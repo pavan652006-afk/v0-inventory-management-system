@@ -1,8 +1,11 @@
+'use server'
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/app/auth/actions'
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, User } from 'lucide-react'
 
 export default async function DashboardLayout({
   children,
@@ -18,71 +21,113 @@ export default async function DashboardLayout({
     redirect('/auth/login')
   }
 
+  // Get user profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
+
+  const displayName = profile?.full_name || user.email?.split('@')[0] || 'User'
+  const userInitial = displayName.charAt(0).toUpperCase()
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-blue-600">Inventory</h1>
-          <p className="text-sm text-gray-600 mt-1">Management System</p>
+    <div className="flex min-h-screen bg-slate-950">
+      {/* Premium Sidebar */}
+      <aside className="w-64 bg-gradient-to-b from-slate-900 to-slate-950 border-r border-slate-800 shadow-2xl flex flex-col">
+        {/* Logo Section */}
+        <div className="p-6 border-b border-slate-800">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg">
+              S
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">Stärke</h1>
+              <p className="text-xs text-slate-400">Inventory</p>
+            </div>
+          </div>
         </div>
 
-        <nav className="px-4 py-6 space-y-2">
-          <Link href="/dashboard">
+        {/* User Profile Section */}
+        <div className="p-4 border-b border-slate-800">
+          <Link href="/dashboard/profile">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800/50 transition-colors cursor-pointer">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+                {userInitial}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">{displayName}</p>
+                <p className="text-xs text-slate-400 truncate">{user.email}</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-2">
+          <Link href="/dashboard" className="block">
             <Button
               variant="ghost"
-              className="w-full justify-start"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
             >
+              <LayoutDashboard className="w-4 h-4 mr-3" />
               Dashboard
             </Button>
           </Link>
-          <Link href="/dashboard/products">
+          <Link href="/dashboard/products" className="block">
             <Button
               variant="ghost"
-              className="w-full justify-start"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
             >
+              <Package className="w-4 h-4 mr-3" />
               Products
             </Button>
           </Link>
-          <Link href="/dashboard/sales">
+          <Link href="/dashboard/sales" className="block">
             <Button
               variant="ghost"
-              className="w-full justify-start"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
             >
+              <ShoppingCart className="w-4 h-4 mr-3" />
               Sales
             </Button>
           </Link>
-          <Link href="/dashboard/reports">
+          <Link href="/dashboard/reports" className="block">
             <Button
               variant="ghost"
-              className="w-full justify-start"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
             >
+              <BarChart3 className="w-4 h-4 mr-3" />
               Reports
+            </Button>
+          </Link>
+          <Link href="/dashboard/profile" className="block">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
+            >
+              <User className="w-4 h-4 mr-3" />
+              Profile
             </Button>
           </Link>
         </nav>
 
-        <div className="absolute bottom-6 left-4 right-6 space-y-3">
-          <div className="border-t border-gray-200 pt-4">
-            <p className="text-sm text-gray-600 mb-3">
-              {user.email}
-            </p>
-            <form action={signOut}>
-              <Button
-                type="submit"
-                variant="outline"
-                className="w-full"
-              >
-                Sign Out
-              </Button>
-            </form>
-          </div>
+        {/* Sign Out Section */}
+        <div className="p-4 border-t border-slate-800">
+          <form action={signOut} className="w-full">
+            <Button
+              type="submit"
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
+            >
+              Sign Out
+            </Button>
+          </form>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1">
-        <div className="p-8">
+      <main className="flex-1 overflow-auto">
+        <div className="min-h-screen bg-slate-950 p-8">
           {children}
         </div>
       </main>

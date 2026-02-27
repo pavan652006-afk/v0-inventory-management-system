@@ -145,7 +145,7 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-gray-600">Loading products...</p>
+        <p className="text-slate-400">Loading products...</p>
       </div>
     )
   }
@@ -154,25 +154,26 @@ export default function ProductsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600 mt-2">Manage your inventory products</p>
+          <h1 className="text-4xl font-bold text-white">Products</h1>
+          <p className="text-slate-400 mt-1">Manage your inventory products</p>
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Add Product</Button>
+            <Button className="bg-white text-black hover:bg-slate-200">Add Product</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-slate-900 border-slate-800 text-white">
             <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-white">Add New Product</DialogTitle>
+              <DialogDescription className="text-slate-400">
                 Enter the product details below
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Product Name</Label>
+                <Label htmlFor="name" className="text-slate-300">Product Name</Label>
                 <Input
                   id="name"
+                  className="bg-slate-800 border-slate-700 text-white"
                   placeholder="e.g., Widget A"
                   value={formData.name}
                   onChange={(e) =>
@@ -182,9 +183,10 @@ export default function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier</Label>
+                <Label htmlFor="supplier" className="text-slate-300">Supplier</Label>
                 <Input
                   id="supplier"
+                  className="bg-slate-800 border-slate-700 text-white"
                   placeholder="e.g., ABC Supplies"
                   value={formData.supplier}
                   onChange={(e) =>
@@ -193,9 +195,10 @@ export default function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity in Stock</Label>
+                <Label htmlFor="quantity" className="text-slate-300">Quantity in Stock</Label>
                 <Input
                   id="quantity"
+                  className="bg-slate-800 border-slate-700 text-white"
                   type="number"
                   placeholder="0"
                   value={formData.quantity_in_stock}
@@ -209,9 +212,10 @@ export default function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cost">Cost Price</Label>
+                <Label htmlFor="cost" className="text-slate-300">Cost Price</Label>
                 <Input
                   id="cost"
+                  className="bg-slate-800 border-slate-700 text-white"
                   type="number"
                   step="0.01"
                   placeholder="0.00"
@@ -223,9 +227,10 @@ export default function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="selling">Selling Price</Label>
+                <Label htmlFor="selling" className="text-slate-300">Selling Price</Label>
                 <Input
                   id="selling"
+                  className="bg-slate-800 border-slate-700 text-white"
                   type="number"
                   step="0.01"
                   placeholder="0.00"
@@ -236,7 +241,7 @@ export default function ProductsPage() {
                   required
                 />
               </div>
-              <Button type="submit" disabled={isAddingProduct} className="w-full">
+              <Button type="submit" disabled={isAddingProduct} className="w-full bg-blue-600 hover:bg-blue-700">
                 {isAddingProduct ? 'Adding...' : 'Add Product'}
               </Button>
             </form>
@@ -244,53 +249,53 @@ export default function ProductsPage() {
         </Dialog>
       </div>
 
-      <Card>
+      <Card className="bg-slate-900 border-slate-800">
         <CardHeader>
-          <CardTitle>Product Inventory</CardTitle>
+          <CardTitle className="text-white">Product Inventory</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded">
               {error}
             </div>
           )}
           {products.length === 0 ? (
-            <p className="text-gray-600 text-center py-8">
+            <p className="text-slate-400 text-center py-8">
               No products yet. Add your first product to get started.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Product Name</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead className="text-right">Stock</TableHead>
-                    <TableHead className="text-right">Cost Price</TableHead>
-                    <TableHead className="text-right">Selling Price</TableHead>
-                    <TableHead className="text-right">Profit</TableHead>
-                    <TableHead className="text-right">Margin %</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className="border-slate-800">
+                    <TableHead className="text-slate-300">Product Name</TableHead>
+                    <TableHead className="text-slate-300">Supplier</TableHead>
+                    <TableHead className="text-right text-slate-300">Stock</TableHead>
+                    <TableHead className="text-right text-slate-300">Cost Price</TableHead>
+                    <TableHead className="text-right text-slate-300">Selling Price</TableHead>
+                    <TableHead className="text-right text-slate-300">Profit</TableHead>
+                    <TableHead className="text-right text-slate-300">Margin %</TableHead>
+                    <TableHead className="text-right text-slate-300">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {products.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>{product.supplier || '-'}</TableCell>
-                      <TableCell className="text-right">
+                    <TableRow key={product.id} className="border-slate-800 hover:bg-slate-800/50">
+                      <TableCell className="font-medium text-white">{product.name}</TableCell>
+                      <TableCell className="text-slate-300">{product.supplier || '-'}</TableCell>
+                      <TableCell className="text-right text-slate-300">
                         {product.quantity_in_stock}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right text-slate-300">
                         ${product.cost_price.toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right text-slate-300">
                         ${product.selling_price.toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-right text-green-600">
+                      <TableCell className="text-right text-green-400">
                         ${profit(product)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right text-slate-300">
                         {profitMargin(product)}%
                       </TableCell>
                       <TableCell className="text-right space-x-2">
@@ -301,8 +306,9 @@ export default function ProductsPage() {
                             handleDeleteProduct(product.id)
                           }
                           disabled={deletingId === product.id}
+                          className="hover:bg-red-500/20"
                         >
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                          <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
                       </TableCell>
                     </TableRow>
