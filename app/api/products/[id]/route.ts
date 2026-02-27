@@ -93,19 +93,26 @@ export async function DELETE(
   }
 
   try {
-    const { error } = await supabase
+    console.log('[v0] Deleting product:', params.id, 'by user:', user.id)
+    
+    const { error, data } = await supabase
       .from('products')
       .delete()
       .eq('id', params.id)
       .eq('created_by', user.id)
+      .select()
 
-    if (error) throw error
+    if (error) {
+      console.log('[v0] Delete error from Supabase:', error)
+      throw error
+    }
 
-    return NextResponse.json({ success: true })
+    console.log('[v0] Product deleted successfully, affected rows:', data)
+    return NextResponse.json({ success: true, message: 'Product deleted successfully' })
   } catch (error) {
-    console.error('Delete product error:', error)
+    console.error('[v0] Delete product error:', error)
     return NextResponse.json(
-      { error: 'Failed to delete product' },
+      { error: error instanceof Error ? error.message : 'Failed to delete product' },
       { status: 500 }
     )
   }

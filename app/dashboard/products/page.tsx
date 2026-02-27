@@ -37,6 +37,8 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddingProduct, setIsAddingProduct] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     supplier: '',
@@ -97,12 +99,25 @@ export default function ProductsPage() {
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return
 
+    setDeletingId(id)
+    setError(null)
+
     try {
       const response = await fetch(`/api/products/${id}`, { method: 'DELETE' })
-      if (!response.ok) throw new Error('Failed to delete product')
-      await fetchProducts()
-    } catch (error) {
-      console.error('Failed to delete product:', error)
+      const responseData = await response.json()
+
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to delete product')
+      }
+
+      setProducts(products.filter(p => p.id !== id))
+      console.log('[v0] Product deleted successfully:', id)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete product'
+      console.error('[v0] Delete error:', errorMessage)
+      setError(errorMessage)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -221,7 +236,12 @@ export default function ProductsPage() {
         <CardHeader>
           <CardTitle>Product Inventory</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
           {products.length === 0 ? (
             <p className="text-gray-600 text-center py-8">
               No products yet. Add your first product to get started.
@@ -268,6 +288,7 @@ export default function ProductsPage() {
                           onClick={() =>
                             handleDeleteProduct(product.id)
                           }
+                          disabled={deletingId === product.id}
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
