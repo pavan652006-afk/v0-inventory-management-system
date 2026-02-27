@@ -2,16 +2,21 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
+  console.log('[v0] GET /api/products called')
   try {
+    console.log('[v0] Creating Supabase client')
     const supabase = await createClient()
+    console.log('[v0] Supabase client created')
 
+    console.log('[v0] Getting user from auth')
     const {
       data: { user },
     } = await supabase.auth.getUser()
+    console.log('[v0] User retrieved:', user?.id || 'null')
 
     if (!user) {
-      console.log('[v0] Unauthorized products request')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.log('[v0] Unauthorized products request - no user')
+      return NextResponse.json({ error: 'Unauthorized - no user' }, { status: 401 })
     }
 
     console.log('[v0] Fetching products for user:', user.id)
@@ -33,8 +38,10 @@ export async function GET() {
     return NextResponse.json(data || [])
   } catch (error) {
     console.error('[v0] Fetch products error:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('[v0] Error details:', errorMessage)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch products' },
+      { error: `Server error: ${errorMessage}` },
       { status: 500 }
     )
   }

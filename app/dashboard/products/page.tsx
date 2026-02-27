@@ -53,17 +53,43 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products')
+      console.log('[v0] Starting fetchProducts')
+      const response = await fetch('/api/products', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).catch((fetchError) => {
+        console.error('[v0] Fetch network error:', fetchError)
+        throw new Error(`Network error: ${fetchError.message}`)
+      })
+
+      console.log('[v0] Response status:', response.status)
+
+      let errorData = null
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+        try {
+          errorData = await response.json()
+        } catch (e) {
+          console.error('[v0] Could not parse error response:', e)
+        }
+        throw new Error(
+          errorData?.error || `HTTP error! status: ${response.status}`
+        )
       }
-      const data = await response.json()
+
+      const data = await response.json().catch((parseError) => {
+        console.error('[v0] JSON parse error:', parseError)
+        throw new Error(`Failed to parse response: ${parseError.message}`)
+      })
+
+      console.log('[v0] Fetched data:', data)
       setProducts(Array.isArray(data) ? data : [])
       setError(null)
     } catch (error) {
-      console.error('[v0] Failed to fetch products:', error)
-      setError(error instanceof Error ? error.message : 'Failed to fetch products')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch products'
+      console.error('[v0] Failed to fetch products:', errorMessage)
+      setError(errorMessage)
       setProducts([])
     } finally {
       setLoading(false)
