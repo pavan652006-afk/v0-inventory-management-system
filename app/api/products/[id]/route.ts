@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const supabase = await createClient()
 
     const {
@@ -19,7 +21,7 @@ export async function GET(
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (error) {
@@ -41,9 +43,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const supabase = await createClient()
 
     const {
@@ -74,7 +78,7 @@ export async function PUT(
         selling_price,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('created_by', user.id)
       .select()
 
@@ -97,9 +101,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    console.log('[v0] DELETE endpoint called with id:', id)
+    
     const supabase = await createClient()
 
     const {
@@ -107,15 +114,16 @@ export async function DELETE(
     } = await supabase.auth.getUser()
 
     if (!user) {
+      console.log('[v0] DELETE: Unauthorized - no user')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('[v0] Deleting product:', params.id, 'by user:', user.id)
+    console.log('[v0] Deleting product:', id, 'by user:', user.id)
     
     const { error, data } = await supabase
       .from('products')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('created_by', user.id)
       .select()
 
