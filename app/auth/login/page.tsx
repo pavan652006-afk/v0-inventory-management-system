@@ -28,13 +28,20 @@ export default function LoginPage() {
     setError(null)
 
     try {
+      console.log('[v0] Attempting login with email:', email)
       const result = await signIn(email, password)
+      console.log('[v0] SignIn result:', result)
       if (result?.error) {
+        console.log('[v0] Login error:', result.error)
         setError(result.error)
+        setIsLoading(false)
       }
+      // If signIn succeeds, it will redirect automatically via the server action
+      // so we don't need to handle success here
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred'
+      console.error('[v0] Login exception:', errorMsg)
+      setError(errorMsg)
       setIsLoading(false)
     }
   }

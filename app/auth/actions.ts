@@ -31,19 +31,30 @@ export async function signUp(email: string, password: string, fullName: string) 
 }
 
 export async function signIn(email: string, password: string) {
-  const supabase = await createClient()
+  try {
+    console.log('[v0] signIn called with email:', email)
+    const supabase = await createClient()
+    console.log('[v0] Supabase client created')
 
-  const { error, data } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-  if (error) {
-    return { error: error.message }
+    console.log('[v0] Auth response - error:', error, 'user:', data?.user?.id)
+
+    if (error) {
+      console.log('[v0] SignIn error:', error.message)
+      return { error: error.message }
+    }
+
+    console.log('[v0] SignIn successful, revalidating and redirecting')
+    revalidatePath('/', 'layout')
+    redirect('/dashboard')
+  } catch (err) {
+    console.error('[v0] SignIn exception:', err)
+    throw err
   }
-
-  revalidatePath('/', 'layout')
-  redirect('/dashboard')
 }
 
 export async function signOut() {
