@@ -37,8 +37,13 @@ export default function LoginPage() {
         setIsLoading(false)
       }
       // If signIn succeeds, it will redirect automatically via the server action
-      // so we don't need to handle success here
+      // Note: redirect() throws NEXT_REDIRECT error which Next.js handles internally
     } catch (err: unknown) {
+      // Ignore redirect errors - they're handled by Next.js
+      if (err instanceof Error && err.message.includes('NEXT_REDIRECT')) {
+        console.log('[v0] Redirect in progress...')
+        return
+      }
       const errorMsg = err instanceof Error ? err.message : 'An error occurred'
       console.error('[v0] Login exception:', errorMsg)
       setError(errorMsg)
