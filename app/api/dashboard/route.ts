@@ -13,43 +13,43 @@ export async function GET() {
   }
 
   try {
-    // Get total products
+    // Get total products for this user
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select('id, quantity_in_stock, cost_price, selling_price')
+      .eq('created_by', user.id)
 
     if (productsError) throw productsError
 
-    // Get total sales
+    // Get total sales for this user
     const { data: sales, error: salesError } = await supabase
       .from('sales')
-      .select('id, total_amount, quantity_sold')
+      .select('id, amount, quantity')
+      .eq('recorded_by', user.id)
 
     if (salesError) throw salesError
 
     // Calculate KPIs
     const totalProducts = products?.length || 0
+    const totalStock = products?.reduce((sum, p) => sum + (p.quantity_in_stock || 0), 0) || 0
     const totalStockValue = products?.reduce(
-      (sum, p) => sum + p.quantity_in_stock * p.cost_price,
+      (sum, p) => sum + (p.quantity_in_stock || 0) * (p.cost_price || 0),
       0
     ) || 0
-    const totalSalesRevenue = sales?.reduce((sum, s) => sum + s.total_amount, 0) || 0
-    const totalRevenue = totalSalesRevenue
-    const totalCost = sales?.reduce((sum, s) => {
-      const product = products?.find((p) => p.id === s.id)
-      return sum + (product?.cost_price || 0) * s.quantity_sold
-    }, 0) || 0
+    const totalRevenue = sales?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
+    const totalCost = products?.reduce((sum, p) => sum + ((p.quantity_in_stock || 0) * (p.cost_price || 0)), 0) || 0
     const totalProfit = totalRevenue - totalCost
 
     return NextResponse.json({
       totalProducts,
+      totalStock,
       totalStockValue,
       totalRevenue,
       totalProfit,
-      profitMargin: totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(2) : 0,
+      profitMargin: totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0',
     })
   } catch (error) {
-    console.error('Dashboard error:', error)
+    console.error('[v0] Dashboard error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch dashboard data' },
       { status: 500 }

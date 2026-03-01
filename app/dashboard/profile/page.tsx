@@ -57,20 +57,44 @@ export default function ProfilePage() {
 
       if (!user) {
         setError('Not authenticated')
+        setSaving(false)
         return
       }
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ full_name: fullName })
-        .eq('id', user.id)
+      // Update full name in profiles table
+      if (fullName !== user.user_metadata?.full_name) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ full_name: fullName })
+          .eq('id', user.id)
 
-      if (updateError) {
-        throw updateError
+        if (profileError) {
+          throw profileError
+        }
       }
 
-      setMessage('Profile updated successfully!')
-      setTimeout(() => setMessage(''), 3000)
+      // Update email if changed
+      if (email && email !== user.email) {
+        const response = await fetch('/api/auth/change-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newEmail: email }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to change email')
+        }
+
+        setMessage(data.message || 'Email changed! Please check your email to confirm.')
+        // Reset email to current value since it needs confirmation
+        setEmail(user.email || '')
+      } else {
+        setMessage('Profile updated successfully!')
+      }
+
+      setTimeout(() => setMessage(''), 5000)
     } catch (err) {
       console.error('[v0] Failed to update profile:', err)
       setError(err instanceof Error ? err.message : 'Failed to update profile')
@@ -123,10 +147,12 @@ export default function ProfilePage() {
                 id="email"
                 type="email"
                 value={email}
-                disabled
-                className="bg-slate-800 border-slate-700 text-slate-300"
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your new email"
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                disabled={saving}
               />
-              <p className="text-xs text-slate-500">Email cannot be changed from here</p>
+              <p className="text-xs text-slate-500">Changing your email will require confirmation via the new email address</p>
             </div>
 
             <div className="space-y-2">

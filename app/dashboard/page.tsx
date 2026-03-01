@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 interface DashboardStats {
   totalProducts: number
+  totalStock: number
   totalStockValue: number
   totalRevenue: number
   totalProfit: number
@@ -78,7 +79,7 @@ export default function DashboardPage() {
             <CardTitle className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Stock</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">250</div>
+            <div className="text-2xl font-bold text-white">{stats?.totalStock || 0}</div>
           </CardContent>
         </Card>
 
@@ -187,20 +188,21 @@ export default function DashboardPage() {
             <CardTitle className="text-white">Product Stock Levels</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={[
-                  { name: 'iPhone 15', stock: 25 },
-                  { name: 'T-Shirt', stock: 200 }
-                ]}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="name" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
-                <Tooltip />
-                <Bar dataKey="stock" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
+            {stats && stats.totalProducts > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={[]} >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="name" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip />
+                  <Bar dataKey="quantity_in_stock" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-80">
+                <p className="text-slate-400">No products yet. Add products to see stock levels.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
