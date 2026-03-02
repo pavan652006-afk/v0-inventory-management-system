@@ -21,10 +21,10 @@ export async function GET() {
 
     if (productsError) throw productsError
 
-    // Get total sales for this user
+    // Get total sales for this user - select all columns to work with existing schema
     const { data: sales, error: salesError } = await supabase
       .from('sales')
-      .select('id, amount, quantity')
+      .select('*')
       .eq('recorded_by', user.id)
 
     if (salesError) throw salesError
@@ -36,7 +36,8 @@ export async function GET() {
       (sum, p) => sum + (p.quantity_in_stock || 0) * (p.cost_price || 0),
       0
     ) || 0
-    const totalRevenue = sales?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
+    // Try total_amount first, then amount, fallback to 0
+    const totalRevenue = sales?.reduce((sum, s) => sum + ((s.total_amount || s.amount) || 0), 0) || 0
     const totalCost = products?.reduce((sum, p) => sum + ((p.quantity_in_stock || 0) * (p.cost_price || 0)), 0) || 0
     const totalProfit = totalRevenue - totalCost
 
