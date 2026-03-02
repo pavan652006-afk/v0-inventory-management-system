@@ -5,11 +5,14 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export async function signUp(email: string, password: string, fullName: string) {
+  console.log('[v0] signUp called with email:', email)
   const supabase = await createClient()
 
   const redirectUrl = process.env.NEXT_PUBLIC_APP_URL 
     ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
     : 'http://localhost:3000/auth/callback'
+
+  console.log('[v0] Redirect URL:', redirectUrl)
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -22,10 +25,18 @@ export async function signUp(email: string, password: string, fullName: string) 
     },
   })
 
+  console.log('[v0] SignUp response - error:', error, 'user:', data?.user?.id)
+
   if (error) {
+    console.error('[v0] SignUp error details:', {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+    })
     return { error: error.message }
   }
 
+  console.log('[v0] User created successfully, redirecting to signup-success')
   revalidatePath('/', 'layout')
   redirect('/auth/signup-success')
 }
